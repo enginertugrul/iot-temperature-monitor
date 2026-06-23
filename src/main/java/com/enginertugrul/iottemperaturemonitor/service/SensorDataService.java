@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 public interface SensorDataService {
 
 
-    void saveData(int sensorValue);
+    void saveData(Double sensorValue);
 
     SensorViewDTO getSensorData();
 

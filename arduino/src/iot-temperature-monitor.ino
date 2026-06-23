@@ -8,8 +8,10 @@ EthernetClient client;
 
 // --- Backend Configuration ---
 // Replace with the local IP address of your computer running Spring Boot
-IPAddress server(192, 168, 0, 37);
+IPAddress server(192, 168, 0, 128);
 int port = 8080;
+
+const char POST_ENDPOINT[] = "/readings";
 
 // --- Timer Variables ---
 unsigned long last_connection_time = 0;             // Last time you connected to the server, in milliseconds
@@ -86,11 +88,17 @@ void send_post_request(double value_to_send) {
     String post_data = "value=" + String(value_to_send);
 
     // --- Send standard HTTP POST request headers ---
-    client.println("POST /data HTTP/1.1");
+    client.print("POST ");
+    client.print(POST_ENDPOINT);
+    client.println(" HTTP/1.1");
+
     client.print("Host: ");
     client.println(server);
+
     client.println("Content-Type: application/x-www-form-urlencoded");
+
     client.println("Connection: close"); // Tell server to drop connection after responding
+
     client.print("Content-Length: ");
     client.println(post_data.length());
 

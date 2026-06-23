@@ -19,10 +19,9 @@ public class SensorDataServiceImpl implements SensorDataService {
     }
 
     @Override
-    public void saveData(int sensorValue) {
-        Double doubleValue = (double) sensorValue;  // Currently I'm simulating the sensor values with dummy data. Going to be replaced with real data.
+    public void saveData(Double sensorValue) {
         String locationOfSensor = "Hall";
-        SensorData sensorData = new SensorData (locationOfSensor, doubleValue, Instant.now());
+        SensorData sensorData = new SensorData (locationOfSensor, sensorValue, Instant.now());
         sensorDataRepository.save(sensorData);
     }
 
@@ -31,7 +30,7 @@ public class SensorDataServiceImpl implements SensorDataService {
         return sensorDataRepository.findFirstByOrderByTimestampDesc()
                 .map(sensorData -> new SensorViewDTO(
                         sensorData.getLocationOfSensor(),
-                        sensorData.getTemperatureValue(),
+                        sensorData.getCelsiusValue(),
                         sensorData.getTimestamp()
                 ))
                 .orElseThrow();

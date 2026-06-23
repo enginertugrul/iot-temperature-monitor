@@ -21,14 +21,19 @@ public class SensorData {
     private String locationOfSensor;
 
     @Column(name = "temperature_value", nullable = false)
-    private Double temperatureValue;
+    private Double celsiusValue;
 
     @Column(name = "timestamp", nullable = false)
     private Instant timestamp;
 
-    public SensorData(String locationOfSensor, Double temperatureValue, Instant timestamp) {
+    public SensorData(String locationOfSensor, Double celsiusValue, Instant timestamp) {
         this.locationOfSensor = locationOfSensor;
-        this.temperatureValue = temperatureValue;
+        this.celsiusValue = celsiusValue;
         this.timestamp = timestamp;
     }
+
+
+
+
+
 }
