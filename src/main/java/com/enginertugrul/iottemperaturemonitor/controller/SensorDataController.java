@@ -3,6 +3,8 @@ package com.enginertugrul.iottemperaturemonitor.controller;
 
 import com.enginertugrul.iottemperaturemonitor.dto.SensorViewDTO;
 import com.enginertugrul.iottemperaturemonitor.service.SensorDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class SensorDataController {
 
-
+    private final Logger LOGGER = LoggerFactory.getLogger(SensorDataController.class);
     private final SensorDataService sensorDataService;
 
     public SensorDataController(SensorDataService sensorDataService) {
@@ -19,9 +21,9 @@ public class SensorDataController {
     }
 
 
-    @PostMapping("/data")
-    public ResponseEntity<Void> receiveData(@RequestParam("value") Integer value) {
-        System.out.println("Received Value: " + value);
+    @PostMapping("/readings")
+    public ResponseEntity<Void> receiveData(@RequestParam("value") Double value) {
+        LOGGER.info("Received Value: {}", value);
         sensorDataService.saveData(value);
         return ResponseEntity.ok().build();
     }
