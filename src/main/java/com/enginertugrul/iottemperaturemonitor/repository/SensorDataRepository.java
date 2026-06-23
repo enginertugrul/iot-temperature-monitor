@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,5 +21,11 @@ public interface SensorDataRepository extends JpaRepository<SensorData, Long> {
     @Modifying
     @Query("DELETE FROM SensorData s WHERE s.timestamp < :cutoffTimeStamp ")
     void deleteOlderThan(Instant cutoffTimeStamp);
+
+
+
+    @Query("SELECT s FROM SensorData s ORDER BY timestamp DESC LIMIT 10")
+    List<SensorData> getRecentTenValues();
+
 
 }

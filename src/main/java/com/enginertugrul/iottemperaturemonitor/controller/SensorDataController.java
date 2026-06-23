@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 public class SensorDataController {
 
@@ -19,6 +21,19 @@ public class SensorDataController {
     public SensorDataController(SensorDataService sensorDataService) {
         this.sensorDataService = sensorDataService;
     }
+
+
+
+    @GetMapping("/")
+    public String getHomePage(Model model) {
+
+        List<SensorViewDTO> recentRecords = sensorDataService.getRecentTenRecords();
+
+        model.addAttribute("recentRecords", recentRecords);
+        return "index";
+    }
+
+
 
 
     @PostMapping("/readings")

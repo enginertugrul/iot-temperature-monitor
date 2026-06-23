@@ -3,6 +3,8 @@ package com.enginertugrul.iottemperaturemonitor.service;
 import com.enginertugrul.iottemperaturemonitor.dto.SensorViewDTO;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface SensorDataService {
 
@@ -11,5 +13,6 @@ public interface SensorDataService {
 
     SensorViewDTO getSensorData();
 
+    List<SensorViewDTO> getRecentTenRecords();
 
 }

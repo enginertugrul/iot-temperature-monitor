@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class SensorDataServiceImpl implements SensorDataService {
@@ -38,6 +39,17 @@ public class SensorDataServiceImpl implements SensorDataService {
                         sensorData.getTimestamp()
                 ))
                 .orElseThrow();
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SensorViewDTO> getRecentTenRecords() {
+        return sensorDataRepository.getRecentTenValues().stream().map(sensorData -> new SensorViewDTO(
+                sensorData.getLocationOfSensor(),
+                sensorData.getCelsiusValue(),
+                sensorData.getTimestamp()
+        )).toList();
     }
 
 
