@@ -5,6 +5,7 @@ import com.enginertugrul.iottemperaturemonitor.dto.SensorViewDTO;
 import com.enginertugrul.iottemperaturemonitor.entity.SensorData;
 import com.enginertugrul.iottemperaturemonitor.repository.SensorDataRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
@@ -19,13 +20,16 @@ public class SensorDataServiceImpl implements SensorDataService {
     }
 
     @Override
+    @Transactional
     public void saveData(Double sensorValue) {
         String locationOfSensor = "Hall";
         SensorData sensorData = new SensorData (locationOfSensor, sensorValue, Instant.now());
         sensorDataRepository.save(sensorData);
     }
 
+
     @Override
+    @Transactional(readOnly = true)
     public SensorViewDTO getSensorData() {
         return sensorDataRepository.findFirstByOrderByTimestampDesc()
                 .map(sensorData -> new SensorViewDTO(
@@ -35,4 +39,7 @@ public class SensorDataServiceImpl implements SensorDataService {
                 ))
                 .orElseThrow();
     }
+
+
+
 }
