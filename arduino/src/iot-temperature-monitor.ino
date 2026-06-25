@@ -85,7 +85,7 @@ void send_post_request(double value_to_send) {
     Serial.println("Connected!");
 
     // Construct the payload as x-www-form-urlencoded (e.g., "value=123")
-    String post_data = "value=" + String(value_to_send);
+    String post_data = "celsiusValue=" + String(value_to_send);
 
     // --- Send standard HTTP POST request headers ---
     client.print("POST ");

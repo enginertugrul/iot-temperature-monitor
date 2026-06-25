@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Temperature Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .nav-button {
+            display: inline-block;
+            background-color: #2c3e50;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+            margin-bottom: 2rem;
+            cursor: pointer;
+        }
+        .nav-button:hover {
+            background-color: #1a252f;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .chart-container {
+            width: 80%;
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .chart-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.02em;
+        }
+    </style>
+</head>
+<body>
+
+<a class="nav-button" th:href="@{/}">← Back to Home</a>
+
+<div class="chart-container">
+
+    <h2 class="chart-title">Last 7 Days</h2>
+
+    <canvas id="temperatureBarChart"></canvas>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    const weeklyData = /*[[${weeklyData}]]*/ [];
+
+    const labels = [];
+    const dataValues = [];
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    weeklyData.forEach(item => {
+        // Parse the date coming from the DTO (Format: YYYY-MM-DD)
+        const dateObj = new Date(item.date);
+        const dayName = dayNames[dateObj.getDay()];
+
+        // Format as DD-MM-YYYY
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        const formattedDate = `${day}-${month}-${year}`;
+
+        labels.push([dayName, formattedDate]);
+        dataValues.push(item.averageTemperature);
+    });
+
+    // Render the Bar Chart
+    const ctx = document.getElementById('temperatureBarChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Daily Average Temperature (°C)',
+                data: dataValues,
+
+                backgroundColor: (ctx) => {
+                    const lastIndex = dataValues.length - 1;
+                    return ctx.dataIndex === lastIndex
+                        ? 'rgba(255, 159, 64, 0.85)'
+                        : 'rgba(54, 162, 235, 0.7)';
+                },
+                borderColor: (ctx) => {
+                    const lastIndex = dataValues.length - 1;
+                    return ctx.dataIndex === lastIndex
+                        ? 'rgba(255, 99, 71, 1)'
+                        : 'rgba(54, 162, 235, 1)';
+                },
+                borderWidth: (ctx) => {
+                    const lastIndex = dataValues.length - 1;
+                    return ctx.dataIndex === lastIndex ? 2 : 1;
+                },
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: (context) => {
+                            const lastIndex = dataValues.length - 1;
+                            return context.index === lastIndex
+                                ? 'rgba(255, 99, 71, 1)'
+                                : '#666';
+                        },
+                        font: (context) => {
+                            const lastIndex = dataValues.length - 1;
+                            return {
+                                weight: context.index === lastIndex ? 'bold' : 'normal'
+                            };
+                        }
+                    }
+                }
+            }
+        }
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

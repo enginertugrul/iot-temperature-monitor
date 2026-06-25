@@ -1,5 +1,6 @@
 package com.enginertugrul.iottemperaturemonitor.service;
 
+import com.enginertugrul.iottemperaturemonitor.dto.SensorDailyAverageDTO;
 import com.enginertugrul.iottemperaturemonitor.dto.SensorViewDTO;
 import org.springframework.stereotype.Service;
 
@@ -9,10 +10,12 @@ import java.util.List;
 public interface SensorDataService {
 
 
-    void saveData(Double sensorValue);
+    void save(Double sensorValue);
 
-    SensorViewDTO getSensorData();
 
     List<SensorViewDTO> getRecentTenRecords();
+
+    List<SensorDailyAverageDTO> getDailyAverageFromLastWeek();
+
 
 }

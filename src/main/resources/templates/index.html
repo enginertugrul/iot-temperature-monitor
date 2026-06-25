@@ -17,6 +17,9 @@
             --header-text: #ffffff;
             --row-hover: #f8f9fa;
             --temp-color: #e74c3c;
+            --button-bg: #2c3e50;
+            --button-hover: #1a252f;
+            --button-text: #ffffff;
         }
 
         body {
@@ -33,8 +36,30 @@
         h1 {
             font-size: 2rem;
             color: var(--header-bg);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             font-weight: 600;
+        }
+
+        /* Button styles */
+        .nav-button {
+            display: inline-block;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+            margin-bottom: 2rem;
+            cursor: pointer;
+        }
+
+        .nav-button:hover {
+            background-color: var(--button-hover);
+            text-decoration: none;
+            color: var(--button-text);
         }
 
         .table-wrapper {
@@ -101,6 +126,8 @@
 <body>
 
 <h1>Recent Sensor Readings</h1>
+
+<a class="nav-button" th:href="@{/statistics}">View Statistics</a>
 
 <div class="table-wrapper">
     <table>

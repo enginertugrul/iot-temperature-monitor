@@ -1,6 +1,7 @@
 package com.enginertugrul.iottemperaturemonitor.controller;
 
 
+import com.enginertugrul.iottemperaturemonitor.dto.SensorDailyAverageDTO;
 import com.enginertugrul.iottemperaturemonitor.dto.SensorViewDTO;
 import com.enginertugrul.iottemperaturemonitor.service.SensorDataService;
 import org.slf4j.Logger;
@@ -37,18 +38,21 @@ public class SensorDataController {
 
 
     @PostMapping("/readings")
-    public ResponseEntity<Void> receiveData(@RequestParam("value") Double value) {
-        LOGGER.info("Received Value: {}", value);
-        sensorDataService.saveData(value);
+    public ResponseEntity<Void> receiveData(@RequestParam("celsiusValue") Double celsiusValue) {
+        LOGGER.info("Received Value: {}", celsiusValue);
+        sensorDataService.save(celsiusValue);
         return ResponseEntity.ok().build();
     }
 
 
-    @GetMapping("/received")
-    public String getLatestSensorData(Model model) {
-        SensorViewDTO latestData = sensorDataService.getSensorData();
-        model.addAttribute("sensor", latestData);
-        return "received";
+
+
+    @GetMapping("/statistics")
+    public String getSensorStatistics(Model model) {
+        List<SensorDailyAverageDTO> weeklyData = sensorDataService.getDailyAverageFromLastWeek();
+        model.addAttribute("weeklyData", weeklyData);
+
+        return "statistics";
     }
 
 

@@ -1,7 +1,7 @@
 package com.enginertugrul.iottemperaturemonitor.dto;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
-public record SensorViewDTO(String locationOfSensor, Double temperatureValue, Instant timestamp) {
+public record SensorViewDTO(String locationOfSensor, Double temperatureValue, ZonedDateTime timestamp) {
 
 }

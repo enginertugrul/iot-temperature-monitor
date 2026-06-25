@@ -24,12 +24,12 @@ public class SensorData {
     private Double celsiusValue;
 
     @Column(name = "timestamp", nullable = false)
-    private Instant timestamp;
+    private Instant recordedAt;
 
-    public SensorData(String locationOfSensor, Double celsiusValue, Instant timestamp) {
+    public SensorData(String locationOfSensor, Double celsiusValue, Instant recordedAt) {
         this.locationOfSensor = locationOfSensor;
         this.celsiusValue = celsiusValue;
-        this.timestamp = timestamp;
+        this.recordedAt = recordedAt;
     }
 
 
