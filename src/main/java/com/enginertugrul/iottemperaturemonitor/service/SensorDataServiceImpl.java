@@ -2,6 +2,7 @@ package com.enginertugrul.iottemperaturemonitor.service;
 
 
 import com.enginertugrul.iottemperaturemonitor.dto.SensorDailyAverageDTO;
+import com.enginertugrul.iottemperaturemonitor.dto.SensorHourlyAverageDTO;
 import com.enginertugrul.iottemperaturemonitor.dto.SensorViewDTO;
 import com.enginertugrul.iottemperaturemonitor.entity.SensorData;
 import com.enginertugrul.iottemperaturemonitor.repository.SensorDataRepository;
@@ -79,6 +80,33 @@ public class SensorDataServiceImpl implements SensorDataService {
     }
 
 
+
+
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SensorHourlyAverageDTO> getHourlyAverageForDate(LocalDate date) {
+        String timezone = "Europe/Istanbul";
+        ZoneId zoneId = ZoneId.of(timezone);
+
+        Instant startOfDay = date.atStartOfDay(zoneId).toInstant();
+        Instant endOfDay = date.plusDays(1).atStartOfDay(zoneId).toInstant(); // Start of the next day
+
+        List<SensorHourlyAverageDTO> dbResults = sensorDataRepository.findHourlyAverageTemperatureForDate(startOfDay, endOfDay, timezone);
+
+        Map<Short, Double> dataMap = dbResults.stream()
+                .collect(Collectors.toMap(SensorHourlyAverageDTO::hour, SensorHourlyAverageDTO::average));
+
+        List<SensorHourlyAverageDTO> completeHourlyData = new ArrayList<>();
+
+        for (short i = 0; i <= 23; i++) {
+            Double avgTemp = dataMap.get(i);
+            completeHourlyData.add(new SensorHourlyAverageDTO(i, avgTemp));
+        }
+
+        return completeHourlyData;
+    }
 
 
 

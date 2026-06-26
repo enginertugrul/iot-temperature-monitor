@@ -1,30 +1,37 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IoT Temperature Monitor</title>
+    <link rel="icon" type="image/png" th:href="@{/favicon.png}" />
 
     <style>
         :root {
-            --bg-color: #f4f7f6;
-            --text-main: #333333;
-            --text-muted: #6c757d;
-            --table-bg: #ffffff;
-            --border-color: #e9ecef;
-            --header-bg: #2c3e50;
-            --header-text: #ffffff;
-            --row-hover: #f8f9fa;
-            --temp-color: #e74c3c;
-            --button-bg: #2c3e50;
-            --button-hover: #1a252f;
+
+            --bg-gradient-start: #111827;
+            --bg-gradient-end: #1f2937;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+
+
+            --table-bg: #1f2937;
+            --border-color: #374151;
+            --header-bg: #111827;
+            --header-text: #e5e7eb;
+            --row-hover: #374151;
+
+
+            --temp-color: #f87171;
+            --button-bg: #3b82f6;
+            --button-hover: #2563eb;
             --button-text: #ffffff;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
             color: var(--text-main);
             margin: 0;
             padding: 3rem 1rem;
@@ -35,12 +42,13 @@
 
         h1 {
             font-size: 2rem;
-            color: var(--header-bg);
+            color: var(--text-main);
             margin-bottom: 1.5rem;
             font-weight: 600;
+            letter-spacing: 0.02em;
         }
 
-        /* Button styles */
+
         .nav-button {
             display: inline-block;
             background-color: var(--button-bg);
@@ -51,13 +59,15 @@
             font-size: 0.95rem;
             font-weight: 500;
             text-decoration: none;
-            transition: background-color 0.2s ease;
+            transition: all 0.2s ease;
             margin-bottom: 2rem;
             cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
         }
 
         .nav-button:hover {
             background-color: var(--button-hover);
+            transform: translateY(-1px);
             text-decoration: none;
             color: var(--button-text);
         }
@@ -66,8 +76,9 @@
             width: 100%;
             max-width: 900px;
             background-color: var(--table-bg);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
             overflow: hidden;
         }
 
@@ -80,6 +91,7 @@
         thead {
             background-color: var(--header-bg);
             color: var(--header-text);
+            border-bottom: 2px solid var(--border-color);
         }
 
         th {
@@ -94,6 +106,7 @@
             padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
+            color: var(--text-main);
         }
 
         tbody tr {
@@ -136,17 +149,20 @@
             <th>Location</th>
             <th>Temperature</th>
             <th>Timestamp</th>
-        </tr>
+            <th>Timezone</th> </tr>
         </thead>
         <tbody>
         <tr th:each="recentRecord : ${recentRecords}">
             <td th:text="${recentRecord.locationOfSensor}">Location</td>
             <td class="temp-value" th:text="${#numbers.formatDecimal(recentRecord.temperatureValue, 1, 1)} + ' °C'">0.0 °C</td>
-            <td th:text="${recentRecord.timestamp}">2023-10-27T10:00:00Z</td>
+
+            <td th:text="${#temporals.format(recentRecord.timestamp, 'dd-MM-yyyy HH:mm:ss.SSSSSS')}">26-06-2026 01:30:29.694723</td>
+
+            <td th:text="${recentRecord.timestamp.offset} + '[' + ${recentRecord.timestamp.zone} + ']'">+03:00[Europe/Istanbul]</td>
         </tr>
 
         <tr th:if="${#lists.isEmpty(recentRecords)}">
-            <td colspan="3" class="empty-state">No recent sensor data available.</td>
+            <td colspan="4" class="empty-state">No recent sensor data available.</td>
         </tr>
         </tbody>
     </table>
