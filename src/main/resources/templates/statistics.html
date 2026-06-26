@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Temperature Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/png" th:href="@{/favicon.png}" />
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            color: #f3f4f6;
+        }
+
+        .nav-button {
+            display: inline-block;
+            background-color: #3b82f6;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-button:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .chart-container {
+            width: 80%;
+            max-width: 850px;
+            margin: 40px auto;
+            background-color: #1f2937;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            border: 1px solid #374151;
+        }
+
+        .chart-container + .chart-container {
+            margin-top: 100px;
+        }
+
+        .chart-title {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        .date-nav-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .date-nav-row .chart-title {
+            margin: 0;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        .nav-arrow-button {
+            background-color: #374151;
+            color: #f3f4f6;
+            border: 1px solid #4b5563;
+            border-radius: 50%;
+            width: 2.25rem;
+            height: 2.25rem;
+            flex-shrink: 0;
+            font-size: 1.25rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-arrow-button:hover:not(:disabled) {
+            background-color: #4b5563;
+            transform: scale(1.08);
+        }
+
+        .nav-arrow-button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .chart-slide-wrapper {
+            will-change: transform, opacity;
+        }
+    </style>
+</head>
+<body>
+
+<a class="nav-button" th:href="@{/}">← Back to Home</a>
+
+<div class="chart-container">
+    <div class="date-nav-row">
+        <button id="prevDayBtn" class="nav-arrow-button" aria-label="Previous day" onclick="navigateDate('prev')">&#8249;</button>
+        <h2 class="chart-title" id="hourlyChartTitle">Today's Hourly Averages</h2>
+        <button id="nextDayBtn" class="nav-arrow-button" aria-label="Next day" onclick="navigateDate('next')">&#8250;</button>
+    </div>
+    <div class="chart-slide-wrapper">
+        <canvas id="temperatureLineChart"></canvas>
+    </div>
+</div>
+
+<div class="chart-container">
+    <h2 class="chart-title">Last 7 Days</h2>
+    <canvas id="temperatureBarChart"></canvas>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    Chart.defaults.color = '#9ca3af';
+    Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+    const darkTooltipConfig = {
+        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+        titleColor: '#f3f4f6',
+        bodyColor: '#d1d5db',
+        borderColor: '#374151',
+        borderWidth: 1,
+        padding: 10,
+        boxPadding: 4
+    };
+
+    // --- Weekly Bar Chart Logic ---
+    const weeklyData = /*[[${weeklyData}]]*/ [];
+    const labels = [];
+    const dataValues = [];
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    weeklyData.forEach(item => {
+        const dateObj = new Date(item.date);
+        const dayName = dayNames[dateObj.getDay()];
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        const formattedDate = `${day}-${month}-${year}`;
+
+        labels.push([dayName, formattedDate]);
+        dataValues.push(item.averageTemperature);
+    });
+
+    const ctx = document.getElementById('temperatureBarChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Daily Average Temperature (°C)',
+                data: dataValues,
+                backgroundColor: (ctx) => {
+                    const lastIndex = dataValues.length - 1;
+                    return ctx.dataIndex === lastIndex
+                        ? 'rgba(245, 158, 11, 0.85)'
+                        : 'rgba(59, 130, 246, 0.7)';
+                },
+                borderColor: (ctx) => {
+                    const lastIndex = dataValues.length - 1;
+                    return ctx.dataIndex === lastIndex
+                        ? 'rgba(245, 158, 11, 1)'
+                        : 'rgba(59, 130, 246, 1)';
+                },
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { color: '#e5e7eb' }
+                },
+                tooltip: darkTooltipConfig
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(55, 65, 81, 0.5)' },
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)',
+                        color: '#9ca3af'
+                    },
+                    ticks: { color: '#d1d5db' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: (context) => {
+                            const lastIndex = dataValues.length - 1;
+                            return context.index === lastIndex
+                                ? 'rgba(245, 158, 11, 1)'
+                                : '#9ca3af';
+                        },
+                        font: (context) => {
+                            const lastIndex = dataValues.length - 1;
+                            return {
+                                weight: context.index === lastIndex ? 'bold' : 'normal'
+                            };
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // --- Hourly Line Chart Logic ---
+
+    // The server tells us its notion of "today" (Europe/Istanbul) so date-boundary
+    // checks don't depend on the visitor's own browser clock/timezone.
+    const todayStr = /*[[${today}]]*/ null;
+
+    function parseDateStr(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d); // local midnight representing that calendar date
+    }
+
+    function formatDateForApi(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    const todayDate = parseDateStr(todayStr);
+    let currentDate = new Date(todayDate); // initial render is always "today"
+
+    const hourlyData = /*[[${hourlyData}]]*/ [];
+
+    function toLabelsAndValues(data) {
+        const labels = [];
+        const values = [];
+        data.forEach(item => {
+            labels.push(String(item.hour).padStart(2, '0') + ":00");
+            values.push(item.average);
+        });
+        return { labels, values };
+    }
+
+    const initialHourly = toLabelsAndValues(hourlyData);
+
+    const lineCtx = document.getElementById('temperatureLineChart').getContext('2d');
+    const lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: initialHourly.labels,
+            datasets: [{
+                label: 'Hourly Average Temperature (°C)',
+                data: initialHourly.values,
+                backgroundColor: 'rgba(6, 182, 212, 0.15)',
+                borderColor: 'rgba(6, 182, 212, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                pointBorderColor: '#1f2937',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.3,
+                spanGaps: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { color: '#e5e7eb' }
+                },
+                tooltip: {
+                    ...darkTooltipConfig,
+                    callbacks: {
+                        title: function (tooltipItems) {
+                            const currentHourStr = tooltipItems[0].label;
+                            const currentHour = parseInt(currentHourStr.split(':')[0], 10);
+                            const nextHour = (currentHour + 1) % 24;
+                            const nextHourStr = String(nextHour).padStart(2, '0') + ":00";
+                            return `${currentHourStr} - ${nextHourStr}`;
+                        },
+                        label: function (context) {
+                            let val = context.parsed.y;
+                            return val !== null ? `Average: ${val.toFixed(2)} °C` : 'No data recorded';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(55, 65, 81, 0.5)' },
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)',
+                        color: '#9ca3af'
+                    },
+                    ticks: { color: '#d1d5db' }
+                },
+                x: {
+                    grid: { color: 'rgba(55, 65, 81, 0.2)' },
+                    title: {
+                        display: true,
+                        text: 'Hour of the Day',
+                        color: '#9ca3af'
+                    },
+                    ticks: { color: '#d1d5db' }
+                }
+            }
+        }
+    });
+
+    // --- Date navigation (prev/next day) ---
+
+    const hourlyChartTitleEl = document.getElementById('hourlyChartTitle');
+    const slideWrapperEl = document.querySelector('.chart-slide-wrapper');
+    const prevDayBtn = document.getElementById('prevDayBtn');
+    const nextDayBtn = document.getElementById('nextDayBtn');
+
+    function updateChartTitle(date) {
+        if (formatDateForApi(date) === formatDateForApi(todayDate)) {
+            hourlyChartTitleEl.textContent = "Today's Hourly Averages";
+            return;
+        }
+        const dayName = dayNames[date.getDay()];
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        hourlyChartTitleEl.textContent = `${dayName}, ${dd}-${mm}-${yyyy} — Hourly Averages`;
+    }
+
+    function updateNavButtonsAvailability() {
+        // Can't navigate into the future relative to the server's "today".
+        nextDayBtn.disabled = formatDateForApi(currentDate) >= formatDateForApi(todayDate);
+    }
+
+    function setNavButtonsDisabled(disabled) {
+        prevDayBtn.disabled = disabled;
+        nextDayBtn.disabled = disabled || formatDateForApi(currentDate) >= formatDateForApi(todayDate);
+    }
+
+    async function fetchHourlyDataForDate(date) {
+        const response = await fetch(`/api/statistics/hourly?date=${formatDateForApi(date)}`);
+        if (!response.ok) {
+            throw new Error(`Failed to load hourly data (status ${response.status})`);
+        }
+        return response.json();
+    }
+
+    function applyHourlyData(data, date) {
+        const { labels, values } = toLabelsAndValues(data);
+        lineChart.data.labels = labels;
+        lineChart.data.datasets[0].data = values;
+        lineChart.update();
+        updateChartTitle(date);
+    }
+
+    // Slides the chart out, swaps in new data while hidden, then slides it back in.
+    function navigateDate(direction) {
+        if (prevDayBtn.disabled && nextDayBtn.disabled) return;
+        if (direction === 'next' && nextDayBtn.disabled) return;
+
+        const targetDate = new Date(currentDate);
+        targetDate.setDate(targetDate.getDate() + (direction === 'next' ? 1 : -1));
+
+        setNavButtonsDisabled(true);
+
+        const exitOffset = direction === 'next' ? '-28px' : '28px';
+        const enterOffset = direction === 'next' ? '28px' : '-28px';
+
+        slideWrapperEl.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+        slideWrapperEl.style.transform = `translateX(${exitOffset})`;
+        slideWrapperEl.style.opacity = '0';
+
+        setTimeout(async () => {
+            try {
+                const data = await fetchHourlyDataForDate(targetDate);
+                currentDate = targetDate;
+                applyHourlyData(data, currentDate);
+            } catch (err) {
+                console.error(err);
+            }
+
+            // Position the (now updated) chart on the entry side with no transition...
+            slideWrapperEl.style.transition = 'none';
+            slideWrapperEl.style.transform = `translateX(${enterOffset})`;
+
+            // ...then let the browser paint that position before animating back to center.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    slideWrapperEl.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+                    slideWrapperEl.style.transform = 'translateX(0)';
+                    slideWrapperEl.style.opacity = '1';
+                });
+            });
+
+            setNavButtonsDisabled(false);
+        }, 250);
+    }
+
+    updateNavButtonsAvailability();
+
+    /*]]>*/
+</script>
+</body>
+</html>
