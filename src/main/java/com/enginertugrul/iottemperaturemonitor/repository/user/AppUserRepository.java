@@ -1,0 +1,12 @@
+package com.enginertugrul.iottemperaturemonitor.repository.user;
+
+import com.enginertugrul.iottemperaturemonitor.entity.user.AppUser;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+
+@Repository
+public interface AppUserRepository extends JpaRepository<AppUser, Long> {
+
+    boolean existsByEmail(String email);
+}
