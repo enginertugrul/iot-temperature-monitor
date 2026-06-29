@@ -1,0 +1,70 @@
+package com.enginertugrul.iottemperaturemonitor.security;
+
+import com.enginertugrul.iottemperaturemonitor.entity.user.AppUser;
+import org.springframework.security.core.CredentialsContainer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
+
+public class AuthenticatedUser implements UserDetails, CredentialsContainer {
+
+    private final Long appUserId;
+    private final String username;
+    private String password;
+    private final boolean enabled;
+    private final List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+
+    public AuthenticatedUser(AppUser appUser) {
+        this.appUserId = appUser.getId();
+        this.username = appUser.getEmail();
+        this.password = appUser.getPasswordHash();
+        this.enabled = appUser.isEnabled();
+    }
+
+    public Long getAppUserId() {
+        return appUserId;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public void eraseCredentials() {
+        this.password = null;
+    }
+}
