@@ -1,9 +1,9 @@
 package com.enginertugrul.iottemperaturemonitor.service.user;
 
+import com.enginertugrul.iottemperaturemonitor.dto.auth.RegisterUserForm;
 import com.enginertugrul.iottemperaturemonitor.entity.user.AppUser;
-import com.enginertugrul.iottemperaturemonitor.entity.user.PreferredLanguage;
-import com.enginertugrul.iottemperaturemonitor.entity.user.TemperatureUnit;
 import com.enginertugrul.iottemperaturemonitor.repository.user.AppUserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,24 +11,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class AppUserServiceImpl implements AppUserService {
 
     private final AppUserRepository appUserRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AppUserServiceImpl(AppUserRepository appUserRepository) {
+
+    public AppUserServiceImpl(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder) {
         this.appUserRepository = appUserRepository;
+        this.passwordEncoder = passwordEncoder;
     }
-
 
     @Override
     @Transactional
-    public AppUser createUser(
-            String email,
-            String passwordHash,
-            PreferredLanguage preferredLanguage,
-            TemperatureUnit preferredTemperatureUnit,
-            String preferredTimezone
-    ) {
+    public AppUser createUser(RegisterUserForm registerUserForm) {
 
 
-        String normalizedEmail = AppUser.normalizeEmail(email);
+        String normalizedEmail = AppUser.normalizeEmail(registerUserForm.getEmail());
+
+        String passwordHash = passwordEncoder.encode(registerUserForm.getPassword());
 
         ensureEmailIsAvailable(normalizedEmail);
 
@@ -36,9 +34,9 @@ public class AppUserServiceImpl implements AppUserService {
         AppUser appUser = new AppUser(
                 normalizedEmail,
                 passwordHash,
-                preferredLanguage,
-                preferredTemperatureUnit,
-                preferredTimezone
+                registerUserForm.getPreferredLanguage(),
+                registerUserForm.getPreferredTemperatureUnit(),
+                registerUserForm.getPreferredTimezone()
         );
 
         return appUserRepository.save(appUser);
