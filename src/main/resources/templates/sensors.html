@@ -46,6 +46,15 @@
     <input type="text" th:field="*{homeLocation}" placeholder="Hall">
     <p th:if="${#fields.hasErrors('homeLocation')}" th:errors="*{homeLocation}"></p>
 
+    <label>Timezone</label>
+    <select th:field="*{timezone}">
+        <option th:each="timezoneOption : ${timezoneOptions}"
+                th:value="${timezoneOption.id}"
+                th:text="${timezoneOption.displayName}">
+        </option>
+    </select>
+    <p th:if="${#fields.hasErrors('timezone')}" th:errors="*{timezone}"></p>
+
     <button type="submit">Add Sensor</button>
 </form>
 

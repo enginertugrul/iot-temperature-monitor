@@ -13,4 +13,6 @@ public interface SensorService {
     List<SensorListItemDTO> getSensorsForUser(Long ownerId);
 
     Sensor getSensorForUser(Long sensorId, Long ownerId);
+
+    String getDefaultTimezoneForUser(Long ownerId);
 }
