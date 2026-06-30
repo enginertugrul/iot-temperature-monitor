@@ -1,9 +1,8 @@
 package com.enginertugrul.iottemperaturemonitor.dto.sensor;
 
 import com.enginertugrul.iottemperaturemonitor.entity.sensor.SensorType;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import com.enginertugrul.iottemperaturemonitor.validation.ValidZoneId;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,4 +28,9 @@ public class SensorForm {
     @NotBlank
     @Size(max = 100)
     private String homeLocation;
+
+    @NotBlank
+    @Size(max = 64)
+    @ValidZoneId
+    private String timezone = "UTC";
 }

@@ -42,7 +42,7 @@ public class SensorServiceImpl implements SensorService {
                 sensorForm.getCity(),
                 sensorForm.getDistrict(),
                 sensorForm.getHomeLocation(),
-                owner.getPreferredTimezone()
+                sensorForm.getTimezone()
         );
 
         return sensorRepository.save(sensor);
@@ -76,4 +76,15 @@ public class SensorServiceImpl implements SensorService {
                 sensor.isActive()
         );
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getDefaultTimezoneForUser(Long ownerId) {
+        return appUserRepository.findById(ownerId)
+                .orElseThrow(() -> new NoSuchElementException("User not found"))
+                .getPreferredTimezone();
+    }
+
+
+
 }
