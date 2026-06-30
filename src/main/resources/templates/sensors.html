@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Sensors</title>
+</head>
+<body>
+<h1>Your Sensors</h1>
+
+<form th:action="@{/logout}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <button type="submit">Logout</button>
+</form>
+
+<a th:href="@{/}">Back to Home</a>
+
+<p th:if="${successMessage}" th:text="${successMessage}"></p>
+
+<h2>Add Sensor</h2>
+
+<form th:action="@{/user/sensors}" th:object="${form}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+    <label>Sensor Type</label>
+    <select th:field="*{type}">
+        <option th:each="type : ${sensorTypes}"
+                th:value="${type}"
+                th:text="${type.displayName}">
+        </option>
+    </select>
+    <p th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></p>
+
+    <label>Name</label>
+    <input type="text" th:field="*{name}" placeholder="Living Room Sensor">
+    <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+
+    <label>City</label>
+    <input type="text" th:field="*{city}" placeholder="Istanbul">
+    <p th:if="${#fields.hasErrors('city')}" th:errors="*{city}"></p>
+
+    <label>District</label>
+    <input type="text" th:field="*{district}" placeholder="Kadikoy">
+    <p th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></p>
+
+    <label>Location in Home</label>
+    <input type="text" th:field="*{homeLocation}" placeholder="Hall">
+    <p th:if="${#fields.hasErrors('homeLocation')}" th:errors="*{homeLocation}"></p>
+
+    <button type="submit">Add Sensor</button>
+</form>
+
+<h2>Registered Sensors</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>City</th>
+        <th>District</th>
+        <th>Home Location</th>
+        <th>Timezone</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="sensor : ${sensors}">
+        <td th:text="${sensor.name}">Living Room Sensor</td>
+        <td th:text="${sensor.type.displayName}">Temperature sensor</td>
+        <td th:text="${sensor.city}">Istanbul</td>
+        <td th:text="${sensor.district}">Kadikoy</td>
+        <td th:text="${sensor.homeLocation}">Hall</td>
+        <td th:text="${sensor.timezone}">Europe/Istanbul</td>
+        <td th:text="${sensor.active ? 'Active' : 'Inactive'}">Active</td>
+    </tr>
+
+    <tr th:if="${#lists.isEmpty(sensors)}">
+        <td colspan="7">You do not have any sensors yet.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
