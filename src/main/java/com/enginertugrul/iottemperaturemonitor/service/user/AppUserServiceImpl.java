@@ -2,7 +2,7 @@ package com.enginertugrul.iottemperaturemonitor.service.user;
 
 import com.enginertugrul.iottemperaturemonitor.dto.auth.RegisterUserForm;
 import com.enginertugrul.iottemperaturemonitor.entity.user.AppUser;
-import com.enginertugrul.iottemperaturemonitor.repository.user.AppUserRepository;
+import com.enginertugrul.iottemperaturemonitor.repository.AppUserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

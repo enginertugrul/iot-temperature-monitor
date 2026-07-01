@@ -1,7 +1,7 @@
 package com.enginertugrul.iottemperaturemonitor.security;
 
 import com.enginertugrul.iottemperaturemonitor.entity.user.AppUser;
-import com.enginertugrul.iottemperaturemonitor.repository.user.AppUserRepository;
+import com.enginertugrul.iottemperaturemonitor.repository.AppUserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
