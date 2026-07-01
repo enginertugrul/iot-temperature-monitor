@@ -1,6 +1,6 @@
 package com.enginertugrul.iottemperaturemonitor.scheduler;
 
-import com.enginertugrul.iottemperaturemonitor.repository.SensorDataRepository;
+import com.enginertugrul.iottemperaturemonitor.repository.SensorReadingRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,10 +12,10 @@ import java.time.temporal.ChronoUnit;
 public class DataRetentionScheduler {
 
 
-    private final SensorDataRepository sensorDataRepository;
+    private final SensorReadingRepository sensorReadingRepository;
 
-    public DataRetentionScheduler(SensorDataRepository sensorDataRepository) {
-        this.sensorDataRepository = sensorDataRepository;
+    public DataRetentionScheduler(SensorReadingRepository sensorReadingRepository) {
+        this.sensorReadingRepository = sensorReadingRepository;
     }
 
 
@@ -27,7 +27,7 @@ public class DataRetentionScheduler {
         short daysToKeepSensorData = 14;
         Instant cutoffDate = Instant.now().minus(daysToKeepSensorData, ChronoUnit.DAYS);
 
-        sensorDataRepository.deleteOlderThan(cutoffDate);
+        sensorReadingRepository.deleteOlderThan(cutoffDate);
 
     }
 

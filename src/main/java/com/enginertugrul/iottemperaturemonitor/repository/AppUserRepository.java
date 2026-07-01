@@ -1,4 +1,4 @@
-package com.enginertugrul.iottemperaturemonitor.repository.user;
+package com.enginertugrul.iottemperaturemonitor.repository;
 
 import com.enginertugrul.iottemperaturemonitor.entity.user.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;

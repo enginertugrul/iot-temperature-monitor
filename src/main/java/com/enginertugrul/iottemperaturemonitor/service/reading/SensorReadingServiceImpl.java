@@ -1,4 +1,4 @@
-package com.enginertugrul.iottemperaturemonitor.service.sensorreading;
+package com.enginertugrul.iottemperaturemonitor.service.reading;
 
 import com.enginertugrul.iottemperaturemonitor.dto.SensorDailyAverageDTO;
 import com.enginertugrul.iottemperaturemonitor.dto.SensorHourlyAverageDTO;
@@ -55,10 +55,14 @@ public class SensorReadingServiceImpl implements SensorReadingService {
     public List<SensorViewDTO> getRecentTenRecords(Long sensorId, Long ownerId) {
         Sensor sensor = getOwnedSensor(sensorId, ownerId);
 
-        return sensorReadingRepository.findTop10BySensorIdAndSensorOwnerIdOrderByRecordedAtDesc(sensorId, ownerId)
+        List<SensorViewDTO> list =  sensorReadingRepository.findTop10BySensorIdAndSensorOwnerIdOrderByRecordedAtDesc(sensorId, ownerId)
                 .stream()
                 .map(reading -> toViewDTO(reading, sensor))
                 .toList();
+
+        list.forEach(System.out::println);
+
+        return null;
     }
 
     @Override

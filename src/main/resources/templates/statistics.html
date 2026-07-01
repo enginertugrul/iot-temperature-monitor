@@ -362,10 +362,14 @@
     }
 
     async function fetchHourlyDataForDate(date) {
-        const response = await fetch(`/api/statistics/hourly?date=${formatDateForApi(date)}`);
+        const sensorId = /*[[${selectedSensorId}]]*/ null;
+        const sensorQuery = sensorId !== null ? `&sensorId=${sensorId}` : '';
+        const response = await fetch(`/api/statistics/hourly?date=${formatDateForApi(date)}${sensorQuery}`);
+
         if (!response.ok) {
             throw new Error(`Failed to load hourly data (status ${response.status})`);
         }
+
         return response.json();
     }
 

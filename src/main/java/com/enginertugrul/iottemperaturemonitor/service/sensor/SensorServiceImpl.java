@@ -5,7 +5,7 @@ import com.enginertugrul.iottemperaturemonitor.dto.sensor.SensorListItemDTO;
 import com.enginertugrul.iottemperaturemonitor.entity.sensor.Sensor;
 import com.enginertugrul.iottemperaturemonitor.entity.user.AppUser;
 import com.enginertugrul.iottemperaturemonitor.repository.SensorRepository;
-import com.enginertugrul.iottemperaturemonitor.repository.user.AppUserRepository;
+import com.enginertugrul.iottemperaturemonitor.repository.AppUserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
