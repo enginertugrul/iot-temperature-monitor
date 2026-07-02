@@ -6,8 +6,10 @@ import com.enginertugrul.iottemperaturemonitor.dto.SensorViewDTO;
 import com.enginertugrul.iottemperaturemonitor.entity.reading.SensorReading;
 import com.enginertugrul.iottemperaturemonitor.entity.sensor.Sensor;
 import com.enginertugrul.iottemperaturemonitor.entity.sensor.SensorType;
+import com.enginertugrul.iottemperaturemonitor.exception.InvalidSensorTokenException;
 import com.enginertugrul.iottemperaturemonitor.repository.SensorReadingRepository;
 import com.enginertugrul.iottemperaturemonitor.repository.SensorRepository;
+import com.enginertugrul.iottemperaturemonitor.security.ingestion.SensorIngestionTokenGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,17 +28,23 @@ public class SensorReadingServiceImpl implements SensorReadingService {
 
     private final SensorReadingRepository sensorReadingRepository;
     private final SensorRepository sensorRepository;
+    private final SensorIngestionTokenGenerator sensorIngestionTokenGenerator;
 
-    public SensorReadingServiceImpl(SensorReadingRepository sensorReadingRepository, SensorRepository sensorRepository) {
+
+    public SensorReadingServiceImpl(SensorReadingRepository sensorReadingRepository, SensorRepository sensorRepository, SensorIngestionTokenGenerator sensorIngestionTokenGenerator) {
         this.sensorReadingRepository = sensorReadingRepository;
         this.sensorRepository = sensorRepository;
+        this.sensorIngestionTokenGenerator = sensorIngestionTokenGenerator;
     }
 
     @Override
     @Transactional
-    public void saveTemperatureReading(Long sensorId, Double celsiusValue) {
-        Sensor sensor = sensorRepository.findById(sensorId)
-                .orElseThrow(() -> new NoSuchElementException("Sensor not found"));
+    public void saveTemperatureReading(String sensorToken, Double celsiusValue) {
+
+        String hashedToken = sensorIngestionTokenGenerator.hash(sensorToken);
+
+        Sensor sensor = sensorRepository.findByIngestionTokenHash(hashedToken)
+                .orElseThrow(InvalidSensorTokenException::new);
 
         if (!sensor.isActive()) {
             throw new IllegalArgumentException("Sensor is not active");
@@ -46,7 +54,10 @@ public class SensorReadingServiceImpl implements SensorReadingService {
             throw new IllegalArgumentException("Sensor is not a temperature sensor");
         }
 
-        SensorReading reading = SensorReading.temperature(sensor, celsiusValue, Instant.now());
+        Instant now = Instant.now();
+
+        SensorReading reading = SensorReading.temperature(sensor, celsiusValue, now);
+        sensor.markSeen(now);
         sensorReadingRepository.save(reading);
     }
 
@@ -55,14 +66,11 @@ public class SensorReadingServiceImpl implements SensorReadingService {
     public List<SensorViewDTO> getRecentTenRecords(Long sensorId, Long ownerId) {
         Sensor sensor = getOwnedSensor(sensorId, ownerId);
 
-        List<SensorViewDTO> list =  sensorReadingRepository.findTop10BySensorIdAndSensorOwnerIdOrderByRecordedAtDesc(sensorId, ownerId)
+       return sensorReadingRepository.findTop10BySensorIdAndSensorOwnerIdOrderByRecordedAtDesc(sensorId, ownerId)
                 .stream()
                 .map(reading -> toViewDTO(reading, sensor))
                 .toList();
 
-        list.forEach(System.out::println);
-
-        return null;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.enginertugrul.iottemperaturemonitor.controller;
 
+import com.enginertugrul.iottemperaturemonitor.dto.sensor.CreatedSensorDTO;
 import com.enginertugrul.iottemperaturemonitor.dto.sensor.SensorForm;
 import com.enginertugrul.iottemperaturemonitor.entity.sensor.SensorType;
 import com.enginertugrul.iottemperaturemonitor.security.AuthenticatedUser;
@@ -54,8 +55,10 @@ public class SensorController {
             return "sensors";
         }
 
+        CreatedSensorDTO createdSensor;
+
         try {
-            sensorService.createSensor(ownerId, form);
+            createdSensor =  sensorService.createSensor(ownerId, form);
         } catch (IllegalArgumentException ex) {
             bindingResult.rejectValue("name", "sensor.name.duplicate", ex.getMessage());
             addPageData(model, ownerId);
@@ -63,6 +66,9 @@ public class SensorController {
         }
 
         redirectAttributes.addFlashAttribute("successMessage", "Sensor created successfully.");
+        redirectAttributes.addFlashAttribute("createdSensorName", createdSensor.sensorName());
+        redirectAttributes.addFlashAttribute("createdSensorToken", createdSensor.rawIngestionToken());
+
         return "redirect:/user/sensors";
     }
 

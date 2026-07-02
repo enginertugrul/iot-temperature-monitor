@@ -52,6 +52,12 @@ public class Sensor {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "ingestion_token_hash" , length = 64)
+    private String ingestionTokenHash;
+
+    @Column(name = "last_seen_at")
+    private Instant lastSeenAt;
+
     public Sensor(
             AppUser owner,
             SensorType type,
@@ -131,4 +137,17 @@ public class Sensor {
 
         return value.trim();
     }
+
+
+    public void assignIngestionTokenHash(String ingestionTokenHash) {
+        this.ingestionTokenHash = ingestionTokenHash;
+        this.updatedAt = Instant.now();
+    }
+
+
+    public void markSeen(Instant seenAt) {
+        this.lastSeenAt = seenAt;
+    }
+
+
 }

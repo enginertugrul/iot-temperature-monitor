@@ -12,6 +12,8 @@ IPAddress server(192, 168, 0, 128);
 int port = 8080;
 
 const char POST_ENDPOINT[] = "/readings";
+const char SENSOR_TOKEN[] = "PASTE_SENSOR_TOKEN_HERE";
+
 
 // --- Timer Variables ---
 unsigned long last_connection_time = 0;             // Last time you connected to the server, in milliseconds
@@ -86,7 +88,7 @@ void send_post_request(double value_to_send) {
 
     // Construct the payload as x-www-form-urlencoded (e.g., "value=123")
     String post_data =
-        "sensorId=" + String(SENSOR_ID) +
+        "sensorToken=" + String(SENSOR_TOKEN) +
         "&celsiusValue=" + String(value_to_send, 2);
 
     // --- Send standard HTTP POST request headers ---
@@ -98,7 +100,6 @@ void send_post_request(double value_to_send) {
     client.println(server);
 
     client.println("Content-Type: application/x-www-form-urlencoded");
-
     client.println("Connection: close"); // Tell server to drop connection after responding
 
     client.print("Content-Length: ");

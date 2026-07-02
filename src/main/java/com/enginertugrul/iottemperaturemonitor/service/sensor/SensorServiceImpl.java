@@ -1,11 +1,14 @@
 package com.enginertugrul.iottemperaturemonitor.service.sensor;
 
+import com.enginertugrul.iottemperaturemonitor.dto.sensor.CreatedSensorDTO;
 import com.enginertugrul.iottemperaturemonitor.dto.sensor.SensorForm;
 import com.enginertugrul.iottemperaturemonitor.dto.sensor.SensorListItemDTO;
 import com.enginertugrul.iottemperaturemonitor.entity.sensor.Sensor;
 import com.enginertugrul.iottemperaturemonitor.entity.user.AppUser;
 import com.enginertugrul.iottemperaturemonitor.repository.SensorRepository;
 import com.enginertugrul.iottemperaturemonitor.repository.AppUserRepository;
+import com.enginertugrul.iottemperaturemonitor.security.ingestion.GeneratedSensorIngestionToken;
+import com.enginertugrul.iottemperaturemonitor.security.ingestion.SensorIngestionTokenGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,15 +20,17 @@ public class SensorServiceImpl implements SensorService {
 
     private final SensorRepository sensorRepository;
     private final AppUserRepository appUserRepository;
+    private final SensorIngestionTokenGenerator sensorIngestionTokenGenerator;
 
-    public SensorServiceImpl(SensorRepository sensorRepository, AppUserRepository appUserRepository) {
+    public SensorServiceImpl(SensorRepository sensorRepository, AppUserRepository appUserRepository, SensorIngestionTokenGenerator sensorIngestionTokenGenerator) {
         this.sensorRepository = sensorRepository;
         this.appUserRepository = appUserRepository;
+        this.sensorIngestionTokenGenerator = sensorIngestionTokenGenerator;
     }
 
     @Override
     @Transactional
-    public Sensor createSensor(Long ownerId, SensorForm sensorForm) {
+    public CreatedSensorDTO createSensor(Long ownerId, SensorForm sensorForm) {
         AppUser owner = appUserRepository.findById(ownerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
@@ -45,7 +50,15 @@ public class SensorServiceImpl implements SensorService {
                 sensorForm.getTimezone()
         );
 
-        return sensorRepository.save(sensor);
+        GeneratedSensorIngestionToken generatedToken = sensorIngestionTokenGenerator.generate();
+        sensor.assignIngestionTokenHash(generatedToken.tokenHash());
+
+        Sensor savedSensor = sensorRepository.save(sensor);
+
+        return new CreatedSensorDTO(savedSensor.getId() ,
+                savedSensor.getName(),
+                generatedToken.rawToken());
+
     }
 
     @Override

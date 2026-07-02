@@ -10,7 +10,7 @@ import java.util.List;
 public interface SensorReadingService {
 
 
-    void saveTemperatureReading(Long sensorId, Double celsiusValue);
+    void saveTemperatureReading(String sensorToken, Double celsiusValue);
 
     List<SensorViewDTO> getRecentTenRecords(Long sensorId, Long ownerId);
 
