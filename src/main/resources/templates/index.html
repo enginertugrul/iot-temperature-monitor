@@ -248,8 +248,12 @@
             <td th:text="${recentRecord.timestamp.offset} + '[' + ${recentRecord.timestamp.zone} + ']'">+03:00[Europe/Istanbul]</td>
         </tr>
 
-        <tr th:if="${#lists.isEmpty(recentRecords)}">
-            <td colspan="4" class="empty-state">No recent sensor data available.</td>
+        <tr th:if="${selectedSensorId == null}">
+            <td colspan="4" class="empty-state">No sensor selected</td>
+        </tr>
+
+        <tr th:if="${selectedSensorId != null and #lists.isEmpty(recentRecords)}">
+            <td colspan="4" class="empty-state">No readings available for selected sensor.</td>
         </tr>
         </tbody>
     </table>
