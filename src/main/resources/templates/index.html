@@ -208,7 +208,8 @@
 <form class="sensor-selector" th:action="@{/}" method="get">
     <label for="sensorId">Sensor</label>
 
-    <select id="sensorId" name="sensorId" onchange="this.form.submit()">
+    <select id="sensorId" name="sensorId"
+            onchange="this.value ? this.form.submit() : window.location.href = this.form.action">
         <option value="" th:selected="${selectedSensorId == null}">
             Select sensor
         </option>
