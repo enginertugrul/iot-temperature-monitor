@@ -1,11 +1,13 @@
 package com.enginertugrul.iottemperaturemonitor.controller;
 
 import com.enginertugrul.iottemperaturemonitor.dto.*;
+import com.enginertugrul.iottemperaturemonitor.dto.sensor.SensorListItemDTO;
 import com.enginertugrul.iottemperaturemonitor.security.AuthenticatedUser;
 import com.enginertugrul.iottemperaturemonitor.service.reading.SensorReadingService;
 import com.enginertugrul.iottemperaturemonitor.service.sensor.SensorService;
 import org.slf4j.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -75,20 +77,25 @@ public class SensorReadingController {
             Model model
     ) {
         if (sensorId == null) {
-            model.addAttribute("weeklyData", List.of());
-            model.addAttribute("hourlyData", emptyHourlyData());
-            model.addAttribute("today", LocalDate.now(ZoneOffset.UTC).toString());
-            model.addAttribute("selectedSensorId", null);
+            addEmptyStatisticsModel(model, "No sensor selected");
             return "statistics";
         }
 
         Long ownerId = authenticatedUser.getAppUserId();
-        LocalDate today = sensorReadingService.getTodayForSensor(sensorId, ownerId);
+        List<SensorListItemDTO> sensors = sensorService.getSensorsForUser(ownerId);
+        model.addAttribute("sensors", sensors);
 
-        model.addAttribute("weeklyData", sensorReadingService.getDailyAverageFromLastWeek(sensorId, ownerId));
-        model.addAttribute("hourlyData", sensorReadingService.getHourlyAverageForDate(sensorId, ownerId, today));
-        model.addAttribute("today", today.toString());
-        model.addAttribute("selectedSensorId", sensorId);
+        try {
+            LocalDate today = sensorReadingService.getTodayForSensor(sensorId, ownerId);
+
+            model.addAttribute("weeklyData", sensorReadingService.getDailyAverageFromLastWeek(sensorId, ownerId));
+            model.addAttribute("hourlyData", sensorReadingService.getHourlyAverageForDate(sensorId, ownerId, today));
+            model.addAttribute("today", today.toString());
+            model.addAttribute("selectedSensorId", sensorId);
+
+        }catch (NoSuchElementException ex) {
+            addEmptyStatisticsModel(model, "No sensor selected");
+        }
 
         return "statistics";
     }
@@ -103,10 +110,14 @@ public class SensorReadingController {
         if (sensorId == null) {
             return ResponseEntity.ok(emptyHourlyData());
         }
+        try {
+            return ResponseEntity.ok(
+                    sensorReadingService.getHourlyAverageForDate(sensorId, authenticatedUser.getAppUserId(), date)
+            );
 
-        return ResponseEntity.ok(
-                sensorReadingService.getHourlyAverageForDate(sensorId, authenticatedUser.getAppUserId(), date)
-        );
+        }catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     private List<SensorHourlyAverageDTO> emptyHourlyData() {
@@ -118,4 +129,25 @@ public class SensorReadingController {
 
         return result;
     }
+
+
+    private void addEmptyStatisticsModel(Model model, String notice) {
+        model.addAttribute("weeklyData", List.of());
+        model.addAttribute("hourlyData", emptyHourlyData());
+        model.addAttribute("today", LocalDate.now(ZoneOffset.UTC).toString());
+        model.addAttribute("selectedSensorId", null);
+        model.addAttribute("selectedSensorName", null);
+        model.addAttribute("statisticsNotice", notice);
+    }
+
+    private String getSensorName(List<SensorListItemDTO> sensors, Long sensorId) {
+        return sensors.stream()
+                .filter(sensor -> sensor.id().equals(sensorId))
+                .map(SensorListItemDTO::name)
+                .findFirst()
+                .orElse(null);
+    }
+
+
+
 }
