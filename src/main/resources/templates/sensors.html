@@ -16,6 +16,15 @@
 
 <p th:if="${successMessage}" th:text="${successMessage}"></p>
 
+<div th:if="${createdSensorToken}">
+    <p>
+        Sensor token for
+        <strong th:text="${createdSensorName}">Sensor</strong>
+    </p>
+    <p>Copy this token now. It will not be shown again.</p>
+    <code th:text="${createdSensorToken}">token</code>
+</div>
+
 <h2>Add Sensor</h2>
 
 <form th:action="@{/user/sensors}" th:object="${form}" method="post">
