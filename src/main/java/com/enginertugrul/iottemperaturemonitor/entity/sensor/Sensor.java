@@ -145,8 +145,8 @@ public class Sensor {
     }
 
 
-    public void markSeen() {
-        this.lastSeenAt = Instant.now();
+    public void markSeen(Instant seenAt) {
+        this.lastSeenAt = seenAt;
     }
 
 

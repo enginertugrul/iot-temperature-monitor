@@ -44,12 +44,12 @@ public class SensorReadingController {
 
     @PostMapping("/readings")
     public ResponseEntity<Void> receiveTemperatureData(
-            @RequestParam("sensorId") Long sensorId,
+            @RequestParam("sensorToken") String sensorToken,
             @RequestParam("celsiusValue") Double celsiusValue
     ) {
-        logger.info("Received temperature reading. sensorId={}, value={}", sensorId, celsiusValue);
+        logger.info("Received temperature reading from token-authenticated sensor. value={}", celsiusValue);
 
-        sensorReadingService.saveTemperatureReading(sensorId, celsiusValue);
+        sensorReadingService.saveTemperatureReading(sensorToken, celsiusValue);
         return ResponseEntity.ok().build();
     }
 
