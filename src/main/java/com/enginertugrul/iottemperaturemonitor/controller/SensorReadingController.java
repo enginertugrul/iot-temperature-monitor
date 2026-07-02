@@ -3,6 +3,7 @@ package com.enginertugrul.iottemperaturemonitor.controller;
 import com.enginertugrul.iottemperaturemonitor.dto.*;
 import com.enginertugrul.iottemperaturemonitor.security.AuthenticatedUser;
 import com.enginertugrul.iottemperaturemonitor.service.reading.SensorReadingService;
+import com.enginertugrul.iottemperaturemonitor.service.sensor.SensorService;
 import org.slf4j.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,11 @@ public class SensorReadingController {
 
     private final Logger logger = LoggerFactory.getLogger(SensorReadingController.class);
     private final SensorReadingService sensorReadingService;
+    private final SensorService sensorService;
 
-    public SensorReadingController(SensorReadingService sensorReadingService) {
+    public SensorReadingController(SensorReadingService sensorReadingService, SensorService sensorService) {
         this.sensorReadingService = sensorReadingService;
+        this.sensorService = sensorService;
     }
 
     @GetMapping("/")
@@ -30,11 +33,23 @@ public class SensorReadingController {
             @RequestParam(value = "sensorId", required = false) Long sensorId,
             Model model
     ) {
-        List<SensorViewDTO> recentRecords = sensorId == null
-                ? List.of()
-                : sensorReadingService.getRecentTenRecords(sensorId, authenticatedUser.getAppUserId());
 
-        model.addAttribute("selectedSensorId", sensorId);
+        Long ownerId = authenticatedUser.getAppUserId();
+
+        List<SensorViewDTO> recentRecords = List.of();
+        Long selectedSensorId = null;
+
+        if(sensorId != null) {
+            try {
+                recentRecords = sensorReadingService.getRecentTenRecords(sensorId, ownerId);
+                selectedSensorId = sensorId;
+            } catch (NoSuchElementException ex) {
+                model.addAttribute("dashboardNotice", "No sensor selected");
+            }
+        }
+
+        model.addAttribute("sensors", sensorService.getSensorsForUser(ownerId));
+        model.addAttribute("selectedSensorId", selectedSensorId);
         model.addAttribute("recentRecords", recentRecords);
         return "index";
     }

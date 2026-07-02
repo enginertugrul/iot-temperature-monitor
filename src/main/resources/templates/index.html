@@ -135,6 +135,46 @@
             color: var(--text-muted);
             font-style: italic;
         }
+
+
+        .dashboard-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .sensor-selector {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sensor-selector label {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .sensor-selector select {
+            flex: 1;
+            background-color: var(--table-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        .nav-button.disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+
     </style>
 </head>
 
@@ -147,9 +187,47 @@
 
 <h1>Recent Sensor Readings</h1>
 
-<a class="nav-button" th:href="@{/statistics}">View Statistics</a>
+<div class="dashboard-actions">
+    <a class="nav-button"
+       th:if="${selectedSensorId != null}"
+       th:href="@{/statistics(sensorId=${selectedSensorId})}">
+        View Statistics
+    </a>
 
-<a class="nav-button" th:href="@{/user/sensors}">Manage Sensors</a>
+    <a class="nav-button disabled"
+       th:if="${selectedSensorId == null}"
+       href="#"
+       aria-disabled="true">
+        View Statistics
+    </a>
+
+    <a class="nav-button" th:href="@{/user/sensors}">Manage Sensors</a>
+</div>
+
+
+<form class="sensor-selector" th:action="@{/}" method="get">
+    <label for="sensorId">Sensor</label>
+
+    <select id="sensorId" name="sensorId" onchange="this.form.submit()">
+        <option value="" th:selected="${selectedSensorId == null}">
+            Select sensor
+        </option>
+
+        <option th:each="sensor : ${sensors}"
+                th:value="${sensor.id}"
+                th:selected="${selectedSensorId != null and sensor.id == selectedSensorId}"
+                th:text="${sensor.name} + ' - ' + ${sensor.homeLocation}">
+        </option>
+    </select>
+
+    <noscript>
+        <button type="submit">Apply</button>
+    </noscript>
+    <p th:if="${dashboardNotice}" class="empty-state" th:text="${dashboardNotice}"></p>
+</form>
+
+
+
 
 <div class="table-wrapper">
     <table>
