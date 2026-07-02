@@ -76,14 +76,14 @@ public class SensorReadingController {
             @RequestParam(value = "sensorId", required = false) Long sensorId,
             Model model
     ) {
+        Long ownerId = authenticatedUser.getAppUserId();
+        List<SensorListItemDTO> sensors = sensorService.getSensorsForUser(ownerId);
+        model.addAttribute("sensors", sensors);
+
         if (sensorId == null) {
             addEmptyStatisticsModel(model, "No sensor selected");
             return "statistics";
         }
-
-        Long ownerId = authenticatedUser.getAppUserId();
-        List<SensorListItemDTO> sensors = sensorService.getSensorsForUser(ownerId);
-        model.addAttribute("sensors", sensors);
 
         try {
             LocalDate today = sensorReadingService.getTodayForSensor(sensorId, ownerId);
@@ -92,6 +92,7 @@ public class SensorReadingController {
             model.addAttribute("hourlyData", sensorReadingService.getHourlyAverageForDate(sensorId, ownerId, today));
             model.addAttribute("today", today.toString());
             model.addAttribute("selectedSensorId", sensorId);
+            model.addAttribute("selectedSensorName", getSensorName(sensors, sensorId));
 
         }catch (NoSuchElementException ex) {
             addEmptyStatisticsModel(model, "No sensor selected");

@@ -107,16 +107,96 @@
         .chart-slide-wrapper {
             will-change: transform, opacity;
         }
+
+        .stats-toolbar {
+            width: 80%;
+            max-width: 850px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .sensor-selector {
+            flex: 1;
+            min-width: 260px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sensor-selector label {
+            color: #9ca3af;
+            font-weight: 600;
+        }
+
+        .sensor-selector select {
+            flex: 1;
+            background-color: #1f2937;
+            color: #f3f4f6;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        .empty-state {
+            width: 80%;
+            max-width: 850px;
+            margin: 2rem auto;
+            color: #9ca3af;
+            text-align: center;
+            font-style: italic;
+        }
+
     </style>
 </head>
 <body>
 
-<a class="nav-button" th:href="@{/}">← Back to Home</a>
+<div class="stats-toolbar">
+    <a class="nav-button"
+       th:if="${selectedSensorId != null}"
+       th:href="@{/(sensorId=${selectedSensorId})}">
+        Back to Home
+    </a>
 
-<div class="chart-container">
+    <a class="nav-button"
+       th:if="${selectedSensorId == null}"
+       th:href="@{/}">
+        Back to Home
+    </a>
+
+    <form class="sensor-selector" th:action="@{/statistics}" method="get">
+        <label for="sensorId">Sensor</label>
+
+        <select id="sensorId" name="sensorId"
+                onchange="this.value ? this.form.submit() : window.location.href = this.form.action">
+            <option value="" th:selected="${selectedSensorId == null}">
+                Select sensor
+            </option>
+
+            <option th:each="sensor : ${sensors}"
+                    th:value="${sensor.id}"
+                    th:selected="${selectedSensorId != null and sensor.id == selectedSensorId}"
+                    th:text="${sensor.name} + ' - ' + ${sensor.homeLocation}">
+            </option>
+        </select>
+
+        <noscript>
+            <button type="submit">Apply</button>
+        </noscript>
+    </form>
+</div>
+
+<p th:if="${statisticsNotice}" class="empty-state" th:text="${statisticsNotice}"></p>
+<div class="chart-container" th:if="${selectedSensorId != null}">
     <div class="date-nav-row">
         <button id="prevDayBtn" class="nav-arrow-button" aria-label="Previous day" onclick="navigateDate('prev')">&#8249;</button>
-        <h2 class="chart-title" id="hourlyChartTitle">Today's Hourly Averages</h2>
+        <h2 class="chart-title" id="hourlyChartTitle"
+            th:text="${selectedSensorName != null ? selectedSensorName + ' - Today''s Hourly Averages' : 'Today''s Hourly Averages'}">
+            Today's Hourly Averages
+        </h2>
         <button id="nextDayBtn" class="nav-arrow-button" aria-label="Next day" onclick="navigateDate('next')">&#8250;</button>
     </div>
     <div class="chart-slide-wrapper">
@@ -124,8 +204,11 @@
     </div>
 </div>
 
-<div class="chart-container">
-    <h2 class="chart-title">Last 7 Days</h2>
+<div class="chart-container"  th:if="${selectedSensorId != null}">
+    <h2 class="chart-title"
+        th:text="${selectedSensorName != null ? selectedSensorName + ' - Last 7 Days' : 'Last 7 Days'}">
+        Last 7 Days
+    </h2>
     <canvas id="temperatureBarChart"></canvas>
 </div>
 
@@ -340,15 +423,19 @@
     const nextDayBtn = document.getElementById('nextDayBtn');
 
     function updateChartTitle(date) {
+        const selectedSensorName = /*[[${selectedSensorName}]]*/ null;
+        const prefix = selectedSensorName !== null ? `${selectedSensorName} - ` : '';
+
         if (formatDateForApi(date) === formatDateForApi(todayDate)) {
-            hourlyChartTitleEl.textContent = "Today's Hourly Averages";
+            hourlyChartTitleEl.textContent = `${prefix}Today's Hourly Averages`;
             return;
         }
+
         const dayName = dayNames[date.getDay()];
         const dd = String(date.getDate()).padStart(2, '0');
         const mm = String(date.getMonth() + 1).padStart(2, '0');
         const yyyy = date.getFullYear();
-        hourlyChartTitleEl.textContent = `${dayName}, ${dd}-${mm}-${yyyy} — Hourly Averages`;
+        hourlyChartTitleEl.textContent = `${prefix}${dayName}, ${dd}-${mm}-${yyyy} - Hourly Averages`;
     }
 
     function updateNavButtonsAvailability() {
@@ -363,8 +450,17 @@
 
     async function fetchHourlyDataForDate(date) {
         const sensorId = /*[[${selectedSensorId}]]*/ null;
-        const sensorQuery = sensorId !== null ? `&sensorId=${sensorId}` : '';
-        const response = await fetch(`/api/statistics/hourly?date=${formatDateForApi(date)}${sensorQuery}`);
+
+        if (sensorId === null) {
+            return [];
+        }
+
+        const params = new URLSearchParams({
+            date: formatDateForApi(date),
+            sensorId: sensorId
+        });
+
+        const response = await fetch(`/api/statistics/hourly?${params.toString()}`);
 
         if (!response.ok) {
             throw new Error(`Failed to load hourly data (status ${response.status})`);
